@@ -7,6 +7,8 @@ Requirements:
 Python 3.7+
 streamlit 1.25.0
 
+streamlit run app.py
+
 Other requirements can be found in the documentation.
 
 Made-with-love By:
