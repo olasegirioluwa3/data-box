@@ -1,7 +1,7 @@
 # data-box
 
-DataBox help businesses calculate waste and predict financial waste.
-Its designed for analytics with great users experience in mind.
+DataBox helps businesses calculate waste and predict financial waste.
+It's designed for tech-savvy business administrators with great user experience in mind.
 
 Requirements:
 Python 3.7+
