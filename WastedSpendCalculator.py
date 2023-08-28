@@ -4,6 +4,7 @@
 # # It model the data according to the give data
 # # It allows to process data after the order of the style of the WatedSpendCalculator excel sheet
 
+# depreciated class
 class WastedSpendCalculator:
     def __init__(self, monthly_traffic=10000.0, cpa=150.0, sales_conversion_rate=2.0, sales_per_units=None, estimated_spend=None, aov_price=300.0, 
                  revenue=None, profit=None, wasted_spend=None, lost_traffic_total=None, profiles_fb_google_pixel_captured=None, 

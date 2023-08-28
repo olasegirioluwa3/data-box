@@ -1,10 +1,11 @@
-# # Author: Oluwafemi Olasegiri
-# # Organization: CareerOnDemand
-# # this class handle the Wasted Spend Calculator
-# # It model the data according to the give data
-# # It allows to process data after the order of the style of the WatedSpendCalculator excel sheet
+# Author: Oluwafemi Olasegiri
+# Organization: CareerOnDemand
+# this class handle the Wasted Spend Calculator
+# It model the data according to the give data
+# It allows to process data after the order of the style of the WatedSpendCalculator excel sheet
 
 import streamlit as st
+import math
 
 data = {
     'monthly_traffic':10000.0,
@@ -15,37 +16,69 @@ data = {
     'data_cleaning':70.0,
     'platform_match_rate':90.0
 }
+
+alp_data = {
+    'alp_your_plan':2500.0,
+    'alp_avg_plan_ref':2500.0,
+    'alp_ref_payout':10.0,
+    'alp_sales_conversion_rate':40.0,
+    'alp_response_rate':60.0
+}
+
 sd = st.sidebar
 sd.header("Fundamental Dataset")
 sd.divider()
-# x = my_cal()
 
-monthly_traffic = sd.number_input("Enter Monthly Traffic", min_value=1.0, step=1.0, key="monthly_traffic", value=data['monthly_traffic'])
+collapse1 = sd.expander("Wasted Spend Calculator", expanded=False)
+collapse_alp = sd.expander("AudienceLab Partner", expanded=False)
+
+# collapse1 Wasted Spend Calculator
+monthly_traffic = collapse1.number_input("Enter Monthly Traffic", min_value=1.0, step=1.0, key="monthly_traffic", value=data['monthly_traffic'])
 data['monthly_traffic'] = monthly_traffic
 
-cpa = sd.number_input("CPA:", min_value=1.0, key="cpa", value=data['cpa'])
+cpa = collapse1.number_input("CPA:", min_value=1.0, key="cpa", value=data['cpa'])
 data['cpa'] = cpa
 
-sales_conversion_rate = sd.number_input("Sales Conversion Rate:", min_value=1.0, key="sales_conversion_rate", value=data['sales_conversion_rate'])
+sales_conversion_rate = collapse1.number_input("Sales Conversion Rate:", min_value=1.0, key="sales_conversion_rate", value=data['sales_conversion_rate'])
 data['sales_conversion_rate'] = sales_conversion_rate
 
-aovp = sd.number_input("AOV/Price:", min_value=1.0, key="aovp", value=data["aovp"]) 
+aovp = collapse1.number_input("AOV/Price:", min_value=1.0, key="aovp", value=data["aovp"]) 
 data['aovp'] = aovp
 
-pixel_match_rate = sd.slider("Pixel Match Rate %", min_value=0.0, max_value=100.0, step=1.0, key="pixel_match_rate", value=data['pixel_match_rate'])
+pixel_match_rate = collapse1.slider("Pixel Match Rate %", min_value=0.0, max_value=100.0, step=1.0, key="pixel_match_rate", value=data['pixel_match_rate'])
 data['pixel_match_rate'] = pixel_match_rate
 
-data_cleaning = sd.slider("Data Cleaning %", min_value=0.0, max_value=100.0, step=1.0, key="data_cleaning", value=data['data_cleaning'])
+data_cleaning = collapse1.slider("Data Cleaning %", min_value=0.0, max_value=100.0, step=1.0, key="data_cleaning", value=data['data_cleaning'])
 data['data_cleaning'] = data_cleaning
 
-platform_match_rate = sd.slider("Platform Match Rate %", min_value=0.0, max_value=100.0, step=1.0, key="platform_match_rate", value=data['platform_match_rate'])
+platform_match_rate = collapse1.slider("Platform Match Rate %", min_value=0.0, max_value=100.0, step=1.0, key="platform_match_rate", value=data['platform_match_rate'])
 data['platform_match_rate'] = platform_match_rate
+
+btn2 = collapse1.button("Calculate Wasted Spend", key="lost_traffic_total", type="primary")
+
+# collapse_alp AudienceLab Partner
+alp_your_plan = collapse_alp.number_input("Your Plan $:", min_value=1.0, key="alp_your_plan", value=alp_data["alp_your_plan"]) 
+alp_data['alp_your_plan'] = alp_your_plan
+
+alp_avg_plan_ref = collapse_alp.number_input("Avg Plan Ref $:", min_value=1.0, key="alp_avg_plan_ref", value=alp_data["alp_avg_plan_ref"]) 
+alp_data['alp_avg_plan_ref'] = alp_avg_plan_ref
+
+alp_ref_payout = collapse_alp.slider("Ref Payout %", min_value=0.0, max_value=100.0, step=1.0, key="alp_ref_payout", value=alp_data['alp_ref_payout'])
+alp_data['alp_ref_payout'] = alp_ref_payout
+
+alp_sales_conversion_rate = collapse_alp.slider("Sales Conversion Rate:", min_value=0.0, max_value=100.0, step=1.0, key="alp_sales_conversion_rate", value=alp_data['alp_sales_conversion_rate'])
+alp_data['alp_sales_conversion_rate'] = alp_sales_conversion_rate
+
+alp_response_rate = collapse_alp.slider("Response Rate:", min_value=0.0, max_value=100.0, step=1.0, key="alp_response_rate", value=alp_data['alp_response_rate'])
+alp_data['alp_response_rate'] = alp_response_rate
+
+alp_btn = collapse_alp.button("Calculate AudienceLab Partner", key="alp_button", type="primary")
 
 def my_cal(data):
     solve_data1 = {
-        'sales_per_units':data['sales_conversion_rate'] * data['monthly_traffic'],
-        'lost_traffic_total':data['monthly_traffic'] - (data['monthly_traffic'] * data['sales_conversion_rate']),
-        'profiles_fb_per_google_pixel_captured':data['monthly_traffic'] * 15/100,
+        'sales_per_units':data['sales_conversion_rate'] /100 * data['monthly_traffic'],
+        'lost_traffic_total':data['monthly_traffic'] - (data['monthly_traffic'] * data['sales_conversion_rate'] / 100),
+        'profiles_fb_per_google_pixel_captured':data['monthly_traffic'] * 15 / 100,
     }
 
     solve_data2 = {
@@ -55,10 +88,10 @@ def my_cal(data):
     }
 
     solve_data3 = {
-        'profit':solve_data2['estimated_spend'] * solve_data2['revenue'],
+        'profit':solve_data2['revenue'] - solve_data2['estimated_spend'],
         'wasted_spend':solve_data2['estimated_spend'] * 75 / 100,
-        'contactable_leads':data['data_cleaning'] * solve_data2['matched_visitors'],
-        'targetable_per_pixeled_audience':data['platform_match_rate'] * solve_data2['matched_visitors']
+        'contactable_leads':data['data_cleaning'] / 100 * solve_data2['matched_visitors'],
+        'targetable_per_pixeled_audience':data['platform_match_rate'] /100 * solve_data2['matched_visitors']
     }
     return {
         'sales_per_units':solve_data1['sales_per_units'],
@@ -73,11 +106,35 @@ def my_cal(data):
         'targetable_per_pixeled_audience':solve_data3['targetable_per_pixeled_audience']
     }
 
-def view(data=my_cal(data)):
+def alp_my_cal(alp_data):
+    solve_data1 = {
+        'payout':(alp_data['alp_ref_payout'] / 100) * alp_data['alp_avg_plan_ref']
+    }
+
+    solve_data2 = {
+        'referrals_needed_to_be':alp_data['alp_your_plan'] / solve_data1['payout']
+    }
+
+    solve_data3 = {
+        'conversations_needed':solve_data2['referrals_needed_to_be'] / (alp_data['alp_sales_conversion_rate']  / 100)
+    }
+
+    solve_data4 = {
+        'touch_points_needed':solve_data3['conversations_needed'] / (alp_data['alp_response_rate'] / 100)
+    }
+
+    return {
+        'payout':solve_data1['payout'],
+        'referrals_needed_to_be':solve_data2['referrals_needed_to_be'],
+        'conversations_needed':solve_data3['conversations_needed'],
+        'touch_points_needed':solve_data4['touch_points_needed']
+    }
+
+def View(data=my_cal(data)):
+    st.write("Wasted Spend Calculator")
     col1, col2, col3 = st.columns(3)  # Create three columns
 
     with col1:
-        # monthly_traffic = sd.number_input("Monthly Traffic", min_value=1, step=1, key="monthly_traffic")
         st.write('lost traffic total: ')
         st.write(data['lost_traffic_total'])
 
@@ -119,51 +176,39 @@ def view(data=my_cal(data)):
 
     return
 
-def calculate_lost_traffic_total():
-    pass
+def alpView(data=alp_my_cal(alp_data)):
+    st.write("AudienceLab Partners")
+    col1, col2, col3 = st.columns(3)  # Create three columns
+    
+    with col1:
+        st.write('Payout: ')
+        st.write(math.ceil(data['payout']))
+
+    with col2:
+        st.write('Referrals Needed To Be: ')
+        st.write(math.ceil(data['referrals_needed_to_be']))
+
+    with col3:
+        st.write('Conversations Needed: ')
+        st.write(math.ceil(data['conversations_needed']))
+
+    with col1:
+        st.write('Touch Points Needed: ')
+        st.write(math.ceil(data['touch_points_needed']))
+
+    return
+
     
 
 # start interface
-st.header("Sales Pipeline Forecast")
-st.write("Wasted Spend Calculator")
-input1 = st.text_input("Lost Traffic Total", disabled=True)
+st.header("SALES PIPELINE FORECAST MODEL") 
 
-btn2 = st.button("Lost Traffic Total", key="lost_traffic_total", type="primary")
+
+
 if btn2:
-    view()
+    View()
 
-st.write(my_cal(data))
+if alp_btn:
+    alpView()
+
 col1, col2, col3 = st.columns(3)  # Create three columns
-
-# with col1:
-#     # monthly_traffic = sd.number_input("Monthly Traffic", min_value=1, step=1, key="monthly_traffic")
-#     st.write('lost traffic total: '+data[])
-
-# with col2:
-#     # cpa = sd.number_input("CPA", min_value=1, key="cpa")
-#     st.write('profiles_fb_per_google_pixel_captured: '+solve_data1['profiles_fb_per_google_pixel_captured'])
-
-# with col3:
-#     # sales_conversion_rate = sd.number_input("Sales Conversion Rate", min_value=1, key="sales_conversion_rate")
-#     # data['sales_conversion_rate'] = sales_conversion_rate
-#     st.write('lost traffic total: '+solve_data1['profiles_fb_per_google_pixel_captured'])
-
-# with col1:
-#     # aovp = sd.number_input("AOV/Price", min_value=1, key="aovp")
-#     # data['aovp'] = aovp
-#     st.write('lost traffic total: '+solve_data1['profiles_fb_per_google_pixel_captured'])
-
-# with col2:
-#     # pixel_match_rate = sd.slider("Pixel Match Rate %", min_value=0, max_value=100, step=1, key="pixel_match_rate", value=45)
-#     # data['pixel_match_rate'] = pixel_match_rate
-#     st.write('lost traffic total: '+solve_data1['profiles_fb_per_google_pixel_captured'])
-
-# with col3:
-#     # data_cleaning = sd.slider("Data Cleaning %", min_value=0, max_value=100, step=1, key="data_cleaning", value=70)
-#     # data['data_cleaning'] = data_cleaning
-#     st.write('lost traffic total: '+solve_data1['profiles_fb_per_google_pixel_captured'])
-
-# with col1:
-#     # platform_match_rate = sd.slider("Platform Match Rate %", min_value=0, max_value=100, step=1, key="platform_match_rate", value=90)
-#     # data['platform_match_rate'] = platform_match_rate
-#     st.write('lost traffic total: '+solve_data1['profiles_fb_per_google_pixel_captured'])
